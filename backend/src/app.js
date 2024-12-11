@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -15,8 +14,8 @@ app.use(bodyParser.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(express.static("public"));
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+import ecommerce_dataset_route from "./routes/ecommerce_dataset.route.js";
+
+app.use("/api/v1", ecommerce_dataset_route);
 
 export { app };
