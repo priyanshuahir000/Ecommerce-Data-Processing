@@ -14,8 +14,8 @@ app.use(bodyParser.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(express.static("public"));
 
-import ecommerce_dataset_route from "./routes/ecommerce_dataset.route.js";
+import productRoutes from "./routes/product.routes.js";
 
-app.use("/api/v1", ecommerce_dataset_route);
+app.use("/api/v1/products", productRoutes);
 
 export { app };
