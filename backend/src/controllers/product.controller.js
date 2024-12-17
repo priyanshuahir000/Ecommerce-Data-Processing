@@ -53,3 +53,15 @@ export const getProduct = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get number of category
+export const getCategoryCount = async (req, res) => {
+  try {
+    const categories = await Product.aggregate([
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+    ]);
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
