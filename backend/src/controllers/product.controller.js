@@ -77,3 +77,15 @@ export const getSubCategoryCount = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get number of brands
+export const getBrandCount = async (req, res) => {
+  try {
+    const brands = await Product.aggregate([
+      { $group: { _id: "$brand", count: { $sum: 1 } } },
+    ]);
+    res.status(200).json(brands);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
