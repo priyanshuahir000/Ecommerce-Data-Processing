@@ -89,3 +89,16 @@ export const getBrandCount = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get number of colors
+export const getColorCount = async (req, res) => {
+  try {
+    const colors = await Product.aggregate([
+      { $unwind: "$product_details.Color" },
+      { $group: { _id: "$product_details.Color", count: { $sum: 1 } } },
+    ]);
+    res.status(200).json(colors);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
