@@ -102,3 +102,16 @@ export const getColorCount = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get number of fabric
+export const getFabricCount = async (req, res) => {
+  try {
+    const fabric = await Product.aggregate([
+      { $unwind: "$product_details.Fabric" },
+      { $group: { _id: "$product_details.Fabric", count: { $sum: 1 } } },
+    ]);
+    res.status(200).json(fabric);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
