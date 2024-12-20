@@ -115,3 +115,18 @@ export const getFabricCount = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get number of pattern
+export const getPatternCount = async (req, res) => {
+  try {
+    const pattern = await Product.aggregate([
+      { $unwind: "$product_details.Pattern" },
+      { $group: { _id: "$product_details.Pattern", count: { $sum: 1 } } },
+    ]);
+    res.status(200).json(pattern);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
