@@ -129,4 +129,14 @@ export const getPatternCount = async (req, res) => {
   }
 };
 
-
+// Get number of discount
+export const getDiscountCount = async (req, res) => {
+  try {
+    const discount = await Product.aggregate([
+      { $group: { _id: "$discount", count: { $sum: 1 } } },
+    ]);
+    res.status(200).json(discount);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
