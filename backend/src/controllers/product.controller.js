@@ -140,3 +140,15 @@ export const getDiscountCount = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get number of out of stock
+export const getOutOfStockCount = async (req, res) => {
+  try {
+    const outOfStock = await Product.aggregate([
+      { $group: { _id: "$out_of_stock", count: { $sum: 1 } } },
+    ]);
+    res.status(200).json(outOfStock);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
