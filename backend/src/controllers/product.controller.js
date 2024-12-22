@@ -152,3 +152,29 @@ export const getOutOfStockCount = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get number of seller
+export const getSellerCount = async (req, res) => {
+  try {
+    const seller = await Product.aggregate([
+      { $group: { _id: "$seller", count: { $sum: 1 } } },
+    ]);
+    res.status(200).json(seller);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get number of products
+export const getProductCount = async (req, res) => {
+  try {
+    const product = await Product.aggregate([
+      { $group: { _id: null, count: { $sum: 1 } } },
+    ]);
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};  
+
+
