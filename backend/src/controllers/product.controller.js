@@ -1,7 +1,7 @@
 import Product from "../models/product.model.js";
 
 // Get all products
-export const getAllProducts = async (req, res) => {
+const getAllProducts = async (req, res) => {
   const {
     page = 1,
     limit = 10,
@@ -45,7 +45,7 @@ export const getAllProducts = async (req, res) => {
 };
 
 // Get a single product
-export const getProduct = async (req, res) => {
+const getProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     res.status(200).json(product);
@@ -55,7 +55,7 @@ export const getProduct = async (req, res) => {
 };
 
 // Get number of category
-export const getCategoryCount = async (req, res) => {
+const getCategoryCount = async (req, res) => {
   try {
     const categories = await Product.aggregate([
       { $group: { _id: "$category", count: { $sum: 1 } } },
@@ -67,7 +67,7 @@ export const getCategoryCount = async (req, res) => {
 };
 
 // Get number of subcategory
-export const getSubCategoryCount = async (req, res) => {
+const getSubCategoryCount = async (req, res) => {
   try {
     const subcategories = await Product.aggregate([
       { $group: { _id: "$sub_category", count: { $sum: 1 } } },
@@ -79,7 +79,7 @@ export const getSubCategoryCount = async (req, res) => {
 };
 
 // Get number of brands
-export const getBrandCount = async (req, res) => {
+const getBrandCount = async (req, res) => {
   try {
     const brands = await Product.aggregate([
       { $group: { _id: "$brand", count: { $sum: 1 } } },
@@ -91,7 +91,7 @@ export const getBrandCount = async (req, res) => {
 };
 
 // Get number of colors
-export const getColorCount = async (req, res) => {
+const getColorCount = async (req, res) => {
   try {
     const colors = await Product.aggregate([
       { $unwind: "$product_details.Color" },
@@ -104,7 +104,7 @@ export const getColorCount = async (req, res) => {
 };
 
 // Get number of fabric
-export const getFabricCount = async (req, res) => {
+const getFabricCount = async (req, res) => {
   try {
     const fabric = await Product.aggregate([
       { $unwind: "$product_details.Fabric" },
@@ -117,7 +117,7 @@ export const getFabricCount = async (req, res) => {
 };
 
 // Get number of pattern
-export const getPatternCount = async (req, res) => {
+const getPatternCount = async (req, res) => {
   try {
     const pattern = await Product.aggregate([
       { $unwind: "$product_details.Pattern" },
@@ -130,7 +130,7 @@ export const getPatternCount = async (req, res) => {
 };
 
 // Get number of discount
-export const getDiscountCount = async (req, res) => {
+const getDiscountCount = async (req, res) => {
   try {
     const discount = await Product.aggregate([
       { $group: { _id: "$discount", count: { $sum: 1 } } },
@@ -142,7 +142,7 @@ export const getDiscountCount = async (req, res) => {
 };
 
 // Get number of out of stock
-export const getOutOfStockCount = async (req, res) => {
+const getOutOfStockCount = async (req, res) => {
   try {
     const outOfStock = await Product.aggregate([
       { $group: { _id: "$out_of_stock", count: { $sum: 1 } } },
@@ -175,6 +175,18 @@ export const getProductCount = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-};  
+};
 
-
+export {
+  getAllProducts,
+  getProduct,
+  getCategoryCount,
+  getSubCategoryCount,
+  getBrandCount,
+  getColorCount,
+  getFabricCount,
+  getPatternCount,
+  getDiscountCount,
+  getOutOfStockCount,
+  getSellerCount,
+};
