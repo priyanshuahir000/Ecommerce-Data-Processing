@@ -109,13 +109,13 @@ This project involves MongoDB-based sorting, filtering, and processing of 30K e-
     }
   },
   {
-    $group: {
-      _id: "_id",
+    "$group": {
+      "_id": "_id",
       "count": {
         "$sum": 1
       }
     }
-  }
+  },
 ]
 ```
 
