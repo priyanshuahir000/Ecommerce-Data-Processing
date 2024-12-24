@@ -76,7 +76,7 @@ This project involves MongoDB-based sorting, filtering, and processing of 30K e-
 ]
 ```
 
-### Number of Colors: 352
+### Number of Colors: 30
 
 ```json
 [
@@ -92,8 +92,13 @@ This project involves MongoDB-based sorting, filtering, and processing of 30K e-
   },
   {
     "$project": {
-      "color": "$product_details.Color"
+      "color": {
+        "$split": ["$product_details.Color", ", "]
+      }
     }
+  },
+  {
+    "$unwind": "$color"
   },
   {
     "$group": {
@@ -104,7 +109,12 @@ This project involves MongoDB-based sorting, filtering, and processing of 30K e-
     }
   },
   {
-    "$count": "Number of Colors"
+    $group: {
+      _id: "_id",
+      "count": {
+        "$sum": 1
+      }
+    }
   }
 ]
 ```
