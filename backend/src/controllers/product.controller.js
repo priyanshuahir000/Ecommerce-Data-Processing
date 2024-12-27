@@ -94,8 +94,39 @@ const getBrandCount = async (req, res) => {
 const getColorCount = async (req, res) => {
   try {
     const colors = await Product.aggregate([
-      { $unwind: "$product_details.Color" },
-      { $group: { _id: "$product_details.Color", count: { $sum: 1 } } },
+      {
+        $unwind: "$product_details",
+      },
+      {
+        $match: {
+          "product_details.Color": {
+            $exists: true,
+          },
+        },
+      },
+      {
+        $project: {
+          color: {
+            $split: ["$product_details.Color", ", "],
+          },
+        },
+      },
+      {
+        $unwind: "$color",
+      },
+      {
+        $group: {
+          _id: "$color",
+          count: {
+            $sum: 1,
+          },
+        },
+      },
+      {
+        $sort: {
+          count: -1,
+        },
+      },
     ]);
     res.status(200).json(colors);
   } catch (error) {
@@ -107,9 +138,102 @@ const getColorCount = async (req, res) => {
 const getFabricCount = async (req, res) => {
   try {
     const fabric = await Product.aggregate([
-      { $unwind: "$product_details.Fabric" },
-      { $group: { _id: "$product_details.Fabric", count: { $sum: 1 } } },
+      {
+        $unwind: "$product_details",
+      },
+      {
+        $match: {
+          "product_details.Fabric": {
+            $exists: true,
+            $ne: null,
+            $ne: "",
+          },
+        },
+      },
+      {
+        $project: {
+          fabric: {
+            $trim: {
+              input: {
+                $toUpper: "$product_details.Fabric",
+              },
+            },
+          },
+        },
+      },
+      // Add normalization rules
+      {
+        $project: {
+          fabric: {
+            $switch: {
+              branches: [
+                // Normalize Cotton variants
+                {
+                  case: {
+                    $regexMatch: {
+                      input: "$fabric",
+                      regex: /COTTON|COTTAN|COOTAN/i,
+                    },
+                  },
+                  then: "COTTON",
+                },
+                // Normalize Polyester variants
+                {
+                  case: {
+                    $regexMatch: {
+                      input: "$fabric",
+                      regex: /POLYESTER|POLYSTER|POLY/i,
+                    },
+                  },
+                  then: "POLYESTER",
+                },
+                // Keep original if no match
+                {
+                  case: true,
+                  then: "$fabric",
+                },
+              ],
+            },
+          },
+        },
+      },
+      // Filter out unwanted entries
+      {
+        $match: {
+          fabric: {
+            $not: {
+              $in: [
+                "HANDWASH, MACHINEWASH",
+                "INNER MATERIAL: FABRIC",
+                "CLOTH",
+                "FABRIC",
+                "HIGH QUALITY MATERIAL",
+                "-`",
+                // Add more items to filter
+                "MACHINE WASH",
+                "WASH CARE",
+              ],
+            },
+          },
+        },
+      },
+      // Group and count
+      {
+        $group: {
+          _id: "$fabric",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $match: {
+          count: { $gt: 5 },
+        },
+      },
+      {
+        $sort: { count: -1 },
+      },
     ]);
+
     res.status(200).json(fabric);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -120,9 +244,53 @@ const getFabricCount = async (req, res) => {
 const getPatternCount = async (req, res) => {
   try {
     const pattern = await Product.aggregate([
-      { $unwind: "$product_details.Pattern" },
-      { $group: { _id: "$product_details.Pattern", count: { $sum: 1 } } },
+      {
+        $unwind: "$product_details",
+      },
+      {
+        $match: {
+          "product_details.Pattern": {
+            $exists: true,
+            $ne: null,
+            $ne: "",
+          },
+        },
+      },
+      {
+        $project: {
+          patterns: {
+            $split: [
+              {
+                $trim: {
+                  input: {
+                    $toUpper: "$product_details.Pattern",
+                  },
+                },
+              },
+              ", ",
+            ],
+          },
+        },
+      },
+      {
+        $unwind: "$patterns",
+      },
+      {
+        $group: {
+          _id: "$patterns",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $match: {
+          count: { $gt: 5 },
+        },
+      },
+      {
+        $sort: { count: -1 },
+      },
     ]);
+
     res.status(200).json(pattern);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -154,7 +322,7 @@ const getOutOfStockCount = async (req, res) => {
 };
 
 // Get number of seller
-export const getSellerCount = async (req, res) => {
+const getSellerCount = async (req, res) => {
   try {
     const seller = await Product.aggregate([
       { $group: { _id: "$seller", count: { $sum: 1 } } },
@@ -166,7 +334,7 @@ export const getSellerCount = async (req, res) => {
 };
 
 // Get number of products
-export const getProductCount = async (req, res) => {
+const getProductCount = async (req, res) => {
   try {
     const product = await Product.aggregate([
       { $group: { _id: null, count: { $sum: 1 } } },
@@ -189,4 +357,5 @@ export {
   getDiscountCount,
   getOutOfStockCount,
   getSellerCount,
+  getProductCount,
 };

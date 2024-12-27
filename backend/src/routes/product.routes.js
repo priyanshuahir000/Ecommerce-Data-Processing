@@ -10,6 +10,7 @@ import { getDiscountCount } from "../controllers/product.controller.js";
 import { getOutOfStockCount } from "../controllers/product.controller.js";
 import { getSellerCount } from "../controllers/product.controller.js";
 import { getProductCount } from "../controllers/product.controller.js";
+import { getPatternCount } from "../controllers/product.controller.js";
 
 const router = express.Router();
 
@@ -33,6 +34,9 @@ router.get("/color/count", getColorCount);
 
 // Route to get number of fabric
 router.get("/fabric/count", getFabricCount);
+
+// Route to get number of pattern
+router.get("/pattern/count", getPatternCount);
 
 // Route to get number of discount
 router.get("/discount/count", getDiscountCount);
