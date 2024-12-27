@@ -59,6 +59,7 @@ const getCategoryCount = async (req, res) => {
   try {
     const categories = await Product.aggregate([
       { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
     ]);
     res.status(200).json(categories);
   } catch (error) {
@@ -71,6 +72,7 @@ const getSubCategoryCount = async (req, res) => {
   try {
     const subcategories = await Product.aggregate([
       { $group: { _id: "$sub_category", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
     ]);
     res.status(200).json(subcategories);
   } catch (error) {
@@ -83,6 +85,7 @@ const getBrandCount = async (req, res) => {
   try {
     const brands = await Product.aggregate([
       { $group: { _id: "$brand", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
     ]);
     res.status(200).json(brands);
   } catch (error) {
@@ -301,8 +304,97 @@ const getPatternCount = async (req, res) => {
 const getDiscountCount = async (req, res) => {
   try {
     const discount = await Product.aggregate([
-      { $group: { _id: "$discount", count: { $sum: 1 } } },
+      {
+        $match: {
+          discount: {
+            $exists: true,
+            $ne: "",
+            $ne: null,
+          },
+        },
+      },
+      {
+        $project: {
+          discountValue: {
+            $convert: {
+              input: {
+                $replaceAll: {
+                  input: "$discount",
+                  find: "% off",
+                  replacement: "",
+                },
+              },
+              to: "int",
+              onError: 0,
+              onNull: 0,
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          range: {
+            $switch: {
+              branches: [
+                {
+                  case: {
+                    $and: [
+                      { $gte: ["$discountValue", 0] },
+                      { $lte: ["$discountValue", 20] },
+                    ],
+                  },
+                  then: "0-20% off",
+                },
+                {
+                  case: {
+                    $and: [
+                      { $gt: ["$discountValue", 20] },
+                      { $lte: ["$discountValue", 40] },
+                    ],
+                  },
+                  then: "21-40% off",
+                },
+                {
+                  case: {
+                    $and: [
+                      { $gt: ["$discountValue", 40] },
+                      { $lte: ["$discountValue", 60] },
+                    ],
+                  },
+                  then: "41-60% off",
+                },
+                {
+                  case: {
+                    $and: [
+                      { $gt: ["$discountValue", 60] },
+                      { $lte: ["$discountValue", 80] },
+                    ],
+                  },
+                  then: "61-80% off",
+                },
+                {
+                  case: { $gt: ["$discountValue", 80] },
+                  then: "81-100% off",
+                },
+              ],
+              default: "No discount",
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$range",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: {
+          _id: 1,
+        },
+      },
     ]);
+
     res.status(200).json(discount);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -326,6 +418,7 @@ const getSellerCount = async (req, res) => {
   try {
     const seller = await Product.aggregate([
       { $group: { _id: "$seller", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
     ]);
     res.status(200).json(seller);
   } catch (error) {
