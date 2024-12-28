@@ -438,6 +438,104 @@ const getProductCount = async (req, res) => {
   }
 };
 
+// Filter products
+const productFilter = async (req, res) => {
+  const {
+    page = 1,
+    limit = 10,
+    categories = "",
+    subcategories = "",
+    brands = "",
+    seller = "",
+    colors = "",
+    fabric = "",
+    pattern = "",
+    outOfStock = false,
+    discount = "",
+    minPrice = 0,
+    maxPrice = Number.MAX_SAFE_INTEGER,
+    rating = 0,
+    search = "",
+  } = req.query;
+
+  try {
+    // Construct the query object
+    const query = {};
+
+    // Filter by category
+    if (categories) query.category = { $in: categories.split(",") };
+
+    // Filter by subcategory
+    if (subcategories) query.sub_category = { $in: subcategories.split(",") };
+
+    // Filter by brand
+    if (brands) query.brand = { $in: brands.split(",") };
+
+    // Filter by seller
+    if (seller) query.seller = seller;
+
+    // Filter by colors in product_details
+    if (colors) {
+      query["product_details.Color"] = { $in: colors.split(",") };
+    }
+
+    // Filter by fabric in product_details
+    if (fabric) {
+      query["product_details.Fabric"] = { $in: fabric.split(",") };
+    }
+
+    // Filter by pattern in product_details
+    if (pattern) {
+      query["product_details.Pattern"] = { $in: pattern.split(",") };
+    }
+
+    // Filter by out of stock
+    if (outOfStock !== undefined) query.out_of_stock = outOfStock;
+
+    // Filter by discount (e.g., "74% off" -> extract percentage)
+    if (discount) {
+      query.discount = {
+        $gte: parseInt(discount.replace("% off", "").trim(), 10),
+      };
+    }
+
+    // Filter by price range (actual_price is a string, so we need to convert it)
+    query.selling_price = {
+      $gte: parseInt(minPrice, 10),
+      $lte: parseInt(maxPrice, 10),
+    };
+
+    // Filter by average rating
+    if (rating) query.average_rating = { $gte: parseFloat(rating) };
+
+    // Search by product title or description
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    // Fetch filtered products with pagination
+    const products = await Product.find(query)
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    // Fetch total product count for the query
+    const totalProduct = await Product.countDocuments(query);
+
+    // Respond with data
+    res.status(200).json({
+      totalProduct,
+      totalPages: Math.ceil(totalProduct / limit),
+      currentPage: page,
+      products,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export {
   getAllProducts,
   getProduct,
@@ -451,4 +549,5 @@ export {
   getOutOfStockCount,
   getSellerCount,
   getProductCount,
+  productFilter,
 };

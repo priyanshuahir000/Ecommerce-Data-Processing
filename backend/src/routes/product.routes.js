@@ -11,6 +11,7 @@ import { getOutOfStockCount } from "../controllers/product.controller.js";
 import { getSellerCount } from "../controllers/product.controller.js";
 import { getProductCount } from "../controllers/product.controller.js";
 import { getPatternCount } from "../controllers/product.controller.js";
+import { productFilter } from "../controllers/product.controller.js";
 
 const router = express.Router();
 
@@ -49,5 +50,8 @@ router.get("/seller/count", getSellerCount);
 
 // Route to get number of products
 router.get("/product/count", getProductCount);
+
+// Route to get filtered products
+router.post("/filter", productFilter);
 
 export default router;
