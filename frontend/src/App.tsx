@@ -3,10 +3,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import "./App.css";
-import React from "react";
+import {useState} from "react";
+import { ProductFilters } from "./components/ProductFilters";
 
 function App() {
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilters, setActiveFilters] = useState<any>({
+    priceRange: [0, 10000],
+    categories: [],
+    ratings: [],
+  })
 
   return (
     <>
@@ -36,7 +42,7 @@ function App() {
                   <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
                 <div className="mt-4">
-                  {/* <ProductFilters onFilterChange={setActiveFilters} /> */}
+                  <ProductFilters onFilterChange={setActiveFilters} />
                 </div>
               </SheetContent>
             </Sheet>
