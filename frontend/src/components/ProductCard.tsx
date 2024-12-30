@@ -7,16 +7,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
+import type { Product } from "@/types/product";
 
 interface ProductCardProps {
-  product: {
-    id: string;
-    title: string;
-    actual_price: number;
-    category: string;
-    images: string[];
-    average_rating: number;
-  };
+  product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
@@ -39,14 +33,16 @@ export function ProductCard({ product }: ProductCardProps) {
               {product.category}
             </Badge>
           </div>
-          <p className="text-lg font-bold">₹{product?.actual_price}</p>
+          <p className="text-lg font-bold">₹{product?.selling_price}</p>
         </div>
         <div className="mt-2 flex items-center space-x-1">
           {Array.from({ length: 5 }).map((_, i) => (
             <span
               key={i}
               className={`text-sm ${
-                i < product?.average_rating ? "text-yellow-400" : "text-gray-300"
+                i < product?.average_rating
+                  ? "text-yellow-400"
+                  : "text-gray-300"
               }`}
             >
               ★
