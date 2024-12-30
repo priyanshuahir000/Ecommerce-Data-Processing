@@ -3,16 +3,39 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import "./App.css";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import { ProductFilters } from "./components/ProductFilters";
+import { ProductCard } from "./components/ProductCard";
 
 function App() {
+  
+  const [products, setProducts] = useState([])
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<any>({
     priceRange: [0, 10000],
     categories: [],
     ratings: [],
   })
+
+  // A useEffect hook to fetch the product data from backend using post 
+  useEffect(() => {
+    fetch("http://localhost:3000/api/v1/products/filter", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        searchQuery,
+        filters: activeFilters,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setProducts(data.products);
+      })
+  }, [searchQuery, activeFilters]);
+  
+  console.log(products)
 
   return (
     <>
@@ -48,6 +71,19 @@ function App() {
             </Sheet>
             </div>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {products.map((product, index) => (
+            <ProductCard key={index} product={product} />
+          ))}
+          {products.length === 0 && (
+            <div className="col-span-full text-center py-12">
+              <p className="text-lg text-muted-foreground">
+                No products found matching your criteria.
+              </p>
+            </div>
+          )}
+        </div>
         </div>
       </div>
     </>

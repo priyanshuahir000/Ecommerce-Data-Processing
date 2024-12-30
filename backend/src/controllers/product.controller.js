@@ -442,7 +442,7 @@ const getProductCount = async (req, res) => {
 const productFilter = async (req, res) => {
   const {
     page = 1,
-    limit = 10,
+    limit = 30,
     categories = "",
     subcategories = "",
     brands = "",
