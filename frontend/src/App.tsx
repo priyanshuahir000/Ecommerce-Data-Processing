@@ -8,6 +8,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+
 import "./App.css";
 import { useEffect, useState } from "react";
 import { ProductModal } from "./components/ProductModal";
@@ -24,6 +25,8 @@ function App() {
     ratings: [],
   });
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
 
   // A useEffect hook to fetch the product data from backend using post
   useEffect(() => {
@@ -34,16 +37,16 @@ function App() {
       },
       body: JSON.stringify({
         searchQuery,
+        page: page,
         filters: activeFilters,
       }),
     })
       .then((res) => res.json())
       .then((data) => {
         setProducts(data.products);
+        setTotalPages(data.totalPages);
       });
-  }, [searchQuery, activeFilters]);
-
-  console.log(products);
+  }, [searchQuery, activeFilters, page]);
 
   return (
     <>
@@ -100,7 +103,6 @@ function App() {
             </div>
           )}
         </div>
-
         {selectedProduct && (
           <ProductModal
             product={selectedProduct}
@@ -108,6 +110,27 @@ function App() {
             onOpenChange={(open: boolean) => !open && setSelectedProduct(null)}
           />
         )}
+      </div>
+      <div>
+        <div className="flex justify-center mt-4">
+          <button
+            className="px-4 py-2 border rounded-md mr-2"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
+            Previous
+          </button>
+          <span className="px-4 py-2">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            className="px-4 py-2 border rounded-md ml-2"
+            disabled={page === totalPages}
+            onClick={() => setPage(page + 1)}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </>
   );
