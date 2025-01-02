@@ -456,7 +456,7 @@ const productFilter = async (req, res) => {
     maxPrice = Number.MAX_SAFE_INTEGER,
     rating = 0,
     search = "",
-  } = req.query;
+  } = req.body;
 
   try {
     // Construct the query object
@@ -522,12 +522,12 @@ const productFilter = async (req, res) => {
       .limit(parseInt(limit));
 
     // Fetch total product count for the query
-    const totalProduct = await Product.countDocuments(query);
+    const totalProducts = await Product.countDocuments(query);
 
     // Respond with data
     res.status(200).json({
-      totalProduct,
-      totalPages: Math.ceil(totalProduct / limit),
+      totalProducts,
+      totalPages: Math.ceil(totalProducts / limit),
       currentPage: page,
       products,
     });
