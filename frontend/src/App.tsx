@@ -127,7 +127,15 @@ function App() {
               </p>
             </div>
           )}
+          <div className="flex justify-center my-8">
+        <PaginationModal
+          page={page}
+          setPage={setPage}
+          totalPages={totalPages}
+        />
+      </div>
           </div>
+          
           )}
           
         
@@ -141,13 +149,7 @@ function App() {
           />
         )}
       </div>
-      <div className="flex justify-center my-8">
-        <PaginationModal
-          page={page}
-          setPage={setPage}
-          totalPages={totalPages}
-        />
-      </div>
+      
     </>
   );
 }
