@@ -440,9 +440,8 @@ const getProductCount = async (req, res) => {
 
 // Filter products
 const productFilter = async (req, res) => {
+  const { page = 1, limit = 30, searchQuery = "" } = req.body;
   const {
-    page = 1,
-    limit = 30,
     categories = "",
     subcategories = "",
     brands = "",
@@ -452,31 +451,64 @@ const productFilter = async (req, res) => {
     pattern = "",
     outOfStock = false,
     discount = "",
-    minPrice = 0,
-    maxPrice = Number.MAX_SAFE_INTEGER,
+    minPrice = "",
+    maxPrice = "",
     rating = 0,
     search = "",
-  } = req.body;
+  } = req.body.filters;
+
+  // try {
+  //   const products = await Product.aggregate([
+  //     {
+  //       $addFields: {
+  //         cleanedPrice: {
+  //           $convert: {
+  //             input: {
+  //               $replaceAll: {
+  //                 input: "$selling_price",
+  //                 find: ",",
+  //                 replacement: "",
+  //               },
+  //             },
+  //             to: "double",
+  //             onError: null, // Fallback for invalid values
+  //             onNull: null, // Fallback for null values
+  //           },
+  //         },
+  //       },
+  //     },
+  //     {
+  //       $match: {
+  //         cleanedPrice: { $gte: 1000, $lte: 1001 },
+  //       },
+  //     },
+  //     { $limit: 10 },
+  //   ]);
+
+  //   console.log(products);
+  // } catch (err) {
+  //   console.error("Error fetching products:", err);
+  // }
 
   try {
     // Construct the query object
     const query = {};
 
     // Filter by category
-    if (categories) query.category = { $in: categories.split(",") };
+    if (categories) query.category = { $in: categories.split("|") };
 
     // Filter by subcategory
-    if (subcategories) query.sub_category = { $in: subcategories.split(",") };
+    if (subcategories) query.sub_category = { $in: subcategories.split("|") };
 
     // Filter by brand
-    if (brands) query.brand = { $in: brands.split(",") };
+    if (brands) query.brand = { $in: brands.split("|") };
 
     // Filter by seller
-    if (seller) query.seller = seller;
+    if (seller) query.seller = { $in: seller.split("|") };
 
     // Filter by colors in product_details
     if (colors) {
-      query["product_details.Color"] = { $in: colors.split(",") };
+      query["product_details.Color"] = { $in: colors.split("|") };
     }
 
     // Filter by fabric in product_details
@@ -500,10 +532,10 @@ const productFilter = async (req, res) => {
     }
 
     // Filter by price range (actual_price is a string, so we need to convert it)
-    query.selling_price = {
-      $gte: parseInt(minPrice, 10),
-      $lte: parseInt(maxPrice, 10),
-    };
+    // query.selling_price = {
+    //   $gte: parseInt(minPrice, 10),
+    //   $lte: parseInt(maxPrice, 10),
+    // };
 
     // Filter by average rating
     if (rating) query.average_rating = { $gte: parseFloat(rating) };
@@ -521,6 +553,7 @@ const productFilter = async (req, res) => {
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
 
+    console.log(query);
     // Fetch total product count for the query
     const totalProducts = await Product.countDocuments(query);
 

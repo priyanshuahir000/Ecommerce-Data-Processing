@@ -37,15 +37,15 @@ function App() {
 
   const fetchProducts = async () => {
     setLoading(true);
-
+    console.log({ activeFilters });
     await fetch("http://localhost:3000/api/v1/products/filter", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        searchQuery,
         page,
+        searchQuery,
         filters: activeFilters,
       }),
     })
@@ -105,12 +105,12 @@ function App() {
           <div>
           <div  className="flex justify-between items-center mb-4">
             <p>
-              {products.length > 0 ? `${page} - ${totalPages} of over ${totalProducts} results` : "No products found"}
+              {products?.length > 0 ? `${page} - ${totalPages} of over ${totalProducts} results` : "No products found"}
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product, index) => (
+            {products?.map((product, index) => (
               <div
                 key={index}
                 onClick={() => setSelectedProduct(product)}
@@ -120,7 +120,7 @@ function App() {
               </div>
             ))}
           </div>
-          {products.length === 0 && (
+          {products?.length === 0 && (
             <div className="col-span-full text-center py-12">
               <p className="text-lg text-muted-foreground">
                 No products found matching your criteria.

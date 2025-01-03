@@ -52,8 +52,7 @@ export function ProductFilters({ onFilterChange }: FiltersProps) {
     onFilterChange({
       priceRange,
       categories: selectedCategories,
-      ratings: selectedRatings,
-      ...newFilters,
+      rating: selectedRatings,
     });
   };
 
