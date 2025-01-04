@@ -451,44 +451,11 @@ const productFilter = async (req, res) => {
     pattern = "",
     outOfStock = false,
     discount = "",
-    minPrice = "",
-    maxPrice = "",
+    minPrice = 0,
+    // maximum possible integer
+    maxPrice = Number.MAX_SAFE_INTEGER,
     rating = 0,
-    search = "",
   } = req.body.filters;
-
-  // try {
-  //   const products = await Product.aggregate([
-  //     {
-  //       $addFields: {
-  //         cleanedPrice: {
-  //           $convert: {
-  //             input: {
-  //               $replaceAll: {
-  //                 input: "$selling_price",
-  //                 find: ",",
-  //                 replacement: "",
-  //               },
-  //             },
-  //             to: "double",
-  //             onError: null, // Fallback for invalid values
-  //             onNull: null, // Fallback for null values
-  //           },
-  //         },
-  //       },
-  //     },
-  //     {
-  //       $match: {
-  //         cleanedPrice: { $gte: 1000, $lte: 1001 },
-  //       },
-  //     },
-  //     { $limit: 10 },
-  //   ]);
-
-  //   console.log(products);
-  // } catch (err) {
-  //   console.error("Error fetching products:", err);
-  // }
 
   try {
     // Construct the query object
@@ -513,12 +480,12 @@ const productFilter = async (req, res) => {
 
     // Filter by fabric in product_details
     if (fabric) {
-      query["product_details.Fabric"] = { $in: fabric.split(",") };
+      query["product_details.Fabric"] = { $in: fabric.split("|") };
     }
 
     // Filter by pattern in product_details
     if (pattern) {
-      query["product_details.Pattern"] = { $in: pattern.split(",") };
+      query["product_details.Pattern"] = { $in: pattern.split("|") };
     }
 
     // Filter by out of stock
@@ -531,24 +498,66 @@ const productFilter = async (req, res) => {
       };
     }
 
-    // Filter by price range (actual_price is a string, so we need to convert it)
-    // query.selling_price = {
-    //   $gte: parseInt(minPrice, 10),
-    //   $lte: parseInt(maxPrice, 10),
-    // };
-
     // Filter by average rating
     if (rating) query.average_rating = { $gte: parseFloat(rating) };
 
     // Search by product title or description
-    if (search) {
+    if (searchQuery) {
       query.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
+        { title: { $regex: searchQuery, $options: "i" } },
+        { description: { $regex: searchQuery, $options: "i" } },
       ];
     }
 
-    // Fetch filtered products with pagination
+    // Filter by pricing
+    if (minPrice || maxPrice) {
+      query.$expr = {
+        $and: [
+          {
+            $gte: [
+              {
+                $toInt: {
+                  $replaceAll: {
+                    input: {
+                      $replaceAll: {
+                        input: "$selling_price",
+                        find: ",",
+                        replacement: "",
+                      },
+                    },
+                    find: " ",
+                    replacement: "",
+                  },
+                },
+              },
+              parseInt(minPrice),
+            ],
+          },
+          {
+            $lte: [
+              {
+                $toInt: {
+                  $replaceAll: {
+                    input: {
+                      $replaceAll: {
+                        input: "$selling_price",
+                        find: ",",
+                        replacement: "",
+                      },
+                    },
+                    find: " ",
+                    replacement: "",
+                  },
+                },
+              },
+              parseInt(maxPrice),
+            ],
+          },
+        ],
+      };
+    }
+
+    // // Fetch filtered products with pagination
     const products = await Product.find(query)
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
